@@ -26,35 +26,34 @@ class Task(object):
         self.status = status
 
     def __str__(self):
-        return '{:2} [{}] {}'.format(self.task_id,
-                                    'X' if self.status else ' ',
-                                    self.task)
+        status_sign = 'X' if self.status else ' '
+        return '{:2} [{}] {}'.format(self.task_id, status_sign, self.task)
 
 class Tasklist(object):
 
     task_id = 1
-    tasks_total = 0
+    num_of_tasks = 0
 
     def __init__(self, name='Tasks'):
         self.name = name
         self.done = {}
         self.undone = {}
+        self.limit = 99
 
     def add(self, task_text):
-        if self.tasks_total == 99:
-            return
-        task = Task(self.task_id, task_text)
-        self.undone[task.task_id] = task
-        self.task_id += 1
-        self.tasks_total += 1
+        if self.num_of_tasks <= self.limit:
+            task = Task(self.task_id, task_text)
+            self.undone[task.task_id] = task
+            self.task_id += 1
+            self.num_of_tasks += 1
 
     def delete(self, task_id):
         if task_id in self.done.keys():
             self.done.pop(task_id)
-            self.tasks_total -= 1
+            self.num_of_tasks -= 1
         elif task_id in self.undone.keys():
             self.undone.pop(task_id)
-            self.tasks_total -= 1
+            self.num_of_tasks -= 1
 
     def change(self, task_id, task):
         if task_id in self.done.keys():
@@ -82,7 +81,7 @@ class Tasklist(object):
         self.done.clear()
         self.undone.clear()
         self.tasks_id = 1
-        self.tasks_total = 0
+        self.num_of_tasks = 0
 
     def undo_all(self):
         temp = self.done.copy()
@@ -91,10 +90,11 @@ class Tasklist(object):
             self.undone[k].set_status(0)
 
     def show(self):
-        header = '{}: {}/{}'.format(self.name.upper(), self.tasks_total, 99)
+        header = '{}: {}/{}'.format(self.name.upper(), self.num_of_tasks,
+                self.limit)
         print('\n' + header)
         print('=' * len(header))
-        if self.tasks_total == 0:
+        if self.num_of_tasks == 0:
             print('No tasks')
         else:
             for k in self.done.keys():
@@ -104,7 +104,9 @@ class Tasklist(object):
         print('=' * len(header) + '\n')
 
 def main():
-    tasks = Tasklist()
+    tasks = Tasklist('blah')
+    tasks.add('Math')
+    tasks.do(1)
     tasks.show()
 
 if __name__ == '__main__':
