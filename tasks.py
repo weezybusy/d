@@ -29,6 +29,7 @@ class Task(object):
         status_sign = 'X' if self.status else ' '
         return '{:2} [{}] {}'.format(self.task_id, status_sign, self.task)
 
+
 class Tasklist(object):
 
     task_id = 1
@@ -89,7 +90,7 @@ class Tasklist(object):
             self.undone[k] = self.done.pop(k)
             self.undone[k].set_status(0)
 
-    def show(self):
+    def list_all(self):
         header = '{}: {}/{}'.format(self.name.upper(), self.num_of_tasks,
                 self.limit)
         print('\n' + header)
@@ -103,11 +104,13 @@ class Tasklist(object):
                 print(self.undone[k])
         print('=' * len(header) + '\n')
 
+
 def main():
     tasks = Tasklist('blah')
     tasks.add('Math')
     tasks.do(1)
-    tasks.show()
+    tasks.list_all()
+
 
 if __name__ == '__main__':
     main()
