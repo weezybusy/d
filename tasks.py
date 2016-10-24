@@ -22,7 +22,7 @@ class Task(object):
 
 class Tasklist(object):
 
-    task_id = 1
+    free_ids = [i for i in range(1, 100)]
     num_of_tasks = 0
 
     def __init__(self, name='Tasks'):
@@ -32,19 +32,21 @@ class Tasklist(object):
         self.limit = 99
 
     def add_task(self, task_text):
-        if self.num_of_tasks <= self.limit:
-            task = Task(self.task_id, task_text)
+        if self.num_of_tasks <= self.limit and len(self.free_ids) != 0:
+            task_id = self.free_ids.pop(0)
+            task = Task(task_id, task_text)
             self.undone[task.task_id] = task
-            self.task_id += 1
             self.num_of_tasks += 1
 
     def remove_task(self, task_id):
         if task_id in self.done.keys():
             self.done.pop(task_id)
             self.num_of_tasks -= 1
+            self.free_ids.append(task_id)
         if task_id in self.undone.keys():
             self.undone.pop(task_id)
             self.num_of_tasks -= 1
+            self.free_ids.append(task_id)
 
     def change_task(self, task_id, task):
         if task_id in self.done.keys():
@@ -73,15 +75,12 @@ class Tasklist(object):
     def clear_all_tasks(self):
         self.done.clear()
         self.undone.clear()
-        self.tasks_id = 1
+        self.free_ids = [i for i in range(1, 100)]
         self.num_of_tasks = 0
 
     def list_all_tasks(self):
-        header = '{}: {}/{}'.format(self.name.upper(),
-                                    self.num_of_tasks,
-                                    self.limit)
-        print('\n' + header)
-        print('=' * len(header))
+        print('\n' + self.name.upper())
+        print('=' * len(self.name))
         if self.num_of_tasks == 0:
             print('No tasks')
         else:
@@ -91,7 +90,8 @@ class Tasklist(object):
             for k in self.undone.keys():
                 print('{:2}. [ ] {}'.format(self.undone[k].task_id,
                                             self.undone[k].task))
-        print('=' * len(header) + '\n')
+        print('=' * len(self.name))
+        print('{}/{}\n'.format( self.num_of_tasks, self.limit))
 
 
 def main():
@@ -100,6 +100,8 @@ def main():
     #args = parser.parse_args()
     #print(args.init)
     tasks = Tasklist()
+    tasks.add_task('Math')
+    tasks.add_task('Programming')
     tasks.list_all_tasks()
 
 
