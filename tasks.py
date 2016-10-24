@@ -1,3 +1,4 @@
+import argparse
 import sys
 
 class Task(object):
@@ -5,7 +6,6 @@ class Task(object):
     def __init__(self, task_id, task):
         self.task_id = task_id
         self.task = task
-        self.status = 0
 
     def get_task_id(self):
         return self.task_id
@@ -13,21 +13,11 @@ class Task(object):
     def get_task(self):
         return self.task
 
-    def get_status(self):
-        return self.status
-
     def set_id(self, task_id):
         self.task_id = task_id
 
     def set_task(self, task):
         self.task = task
-
-    def set_status(self, status):
-        self.status = status
-
-    def __str__(self):
-        status_sign = 'X' if self.status else ' '
-        return '{:2} [{}] {}'.format(self.task_id, status_sign, self.task)
 
 
 class Tasklist(object):
@@ -41,75 +31,76 @@ class Tasklist(object):
         self.undone = {}
         self.limit = 99
 
-    def add(self, task_text):
+    def add_task(self, task_text):
         if self.num_of_tasks <= self.limit:
             task = Task(self.task_id, task_text)
             self.undone[task.task_id] = task
             self.task_id += 1
             self.num_of_tasks += 1
 
-    def delete(self, task_id):
+    def remove_task(self, task_id):
         if task_id in self.done.keys():
             self.done.pop(task_id)
             self.num_of_tasks -= 1
-        elif task_id in self.undone.keys():
+        if task_id in self.undone.keys():
             self.undone.pop(task_id)
             self.num_of_tasks -= 1
 
-    def change(self, task_id, task):
+    def change_task(self, task_id, task):
         if task_id in self.done.keys():
             self.done[task_id].set_task(task)
-        elif task_id in self.undone.keys():
+        if task_id in self.undone.keys():
             self.undone[task_id].set_task(task)
 
-    def do(self, task_id):
+    def do_task(self, task_id):
         if task_id in self.undone.keys():
-            self.undone[task_id].set_status(1)
             self.done[task_id] = self.undone.pop(task_id)
 
-    def undo(self, task_id):
+    def undo_task(self, task_id):
         if task_id in self.done.keys():
-            self.done[task_id].set_status(0)
             self.undone[task_id] = self.done.pop(task_id)
 
-    def do_all(self):
+    def do_all_tasks(self):
         temp_dict = self.undone.copy()
         for k in temp_dict.keys():
             self.done[k] = self.undone.pop(k)
-            self.done[k].set_status(1)
 
-    def clear(self):
+    def undo_all_tasks(self):
+        temp = self.done.copy()
+        for k in temp:
+            self.undone[k] = self.done.pop(k)
+
+    def clear_all_tasks(self):
         self.done.clear()
         self.undone.clear()
         self.tasks_id = 1
         self.num_of_tasks = 0
 
-    def undo_all(self):
-        temp = self.done.copy()
-        for k in temp:
-            self.undone[k] = self.done.pop(k)
-            self.undone[k].set_status(0)
-
-    def list_all(self):
-        header = '{}: {}/{}'.format(self.name.upper(), self.num_of_tasks,
-                self.limit)
+    def list_all_tasks(self):
+        header = '{}: {}/{}'.format(self.name.upper(),
+                                    self.num_of_tasks,
+                                    self.limit)
         print('\n' + header)
         print('=' * len(header))
         if self.num_of_tasks == 0:
             print('No tasks')
         else:
             for k in self.done.keys():
-                print(self.done[k])
+                print('{:2}. [X] {}'.format(self.done[k].task_id,
+                                            self.done[k].task))
             for k in self.undone.keys():
-                print(self.undone[k])
+                print('{:2}. [ ] {}'.format(self.undone[k].task_id,
+                                            self.undone[k].task))
         print('=' * len(header) + '\n')
 
 
 def main():
-    tasks = Tasklist('blah')
-    tasks.add('Math')
-    tasks.do(1)
-    tasks.list_all()
+    #parser = argparse.ArgumentParser()
+    #parser.add_argument('init', help='Create a task list in current directory')
+    #args = parser.parse_args()
+    #print(args.init)
+    tasks = Tasklist()
+    tasks.list_all_tasks()
 
 
 if __name__ == '__main__':
