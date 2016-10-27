@@ -1,5 +1,7 @@
 import argparse
+import pathlib
 import sys
+from pathlib import Path
 
 class Task(object):
 
@@ -25,11 +27,27 @@ class Tasklist(object):
     free_ids = [i for i in range(1, 100)]
     num_of_tasks = 0
 
-    def __init__(self, name='Tasks'):
+    def __init__(self, name='tasklist', tasksdir='.'):
         self.name = name
+        self.tasksdir = tasksdir
         self.done = {}
         self.undone = {}
         self.limit = 99
+
+        filemap = (self.name, '{}.done'.format(self.name))
+        for filename in filemap:
+            path = Path().resolve().joinpath(self.tasksdir, filename)
+            if path.is_dir():
+                print('Bad path')
+            else:
+                if path.exists():
+                    try:
+                        with path.open() as f:
+                            print(f.readline(), end='')
+                    except IOError:
+                        print('Couldn\'t open {}'.format(str(path)))
+
+        # TODO: read tasks from tasklist file
 
     def add_task(self, task_text):
         if self.num_of_tasks <= self.limit and len(self.free_ids) != 0:
@@ -39,37 +57,37 @@ class Tasklist(object):
             self.num_of_tasks += 1
 
     def remove_task(self, task_id):
-        if task_id in self.done.keys():
+        if task_id in self.done:
             self.done.pop(task_id)
             self.num_of_tasks -= 1
             self.free_ids.append(task_id)
-        if task_id in self.undone.keys():
+        if task_id in self.undone:
             self.undone.pop(task_id)
             self.num_of_tasks -= 1
             self.free_ids.append(task_id)
 
     def change_task(self, task_id, task):
-        if task_id in self.done.keys():
+        if task_id in self.done:
             self.done[task_id].set_task(task)
-        if task_id in self.undone.keys():
+        if task_id in self.undone:
             self.undone[task_id].set_task(task)
 
     def do_task(self, task_id):
-        if task_id in self.undone.keys():
+        if task_id in self.undone:
             self.done[task_id] = self.undone.pop(task_id)
 
     def undo_task(self, task_id):
-        if task_id in self.done.keys():
+        if task_id in self.done:
             self.undone[task_id] = self.done.pop(task_id)
 
     def do_all_tasks(self):
         temp_dict = self.undone.copy()
-        for k in temp_dict.keys():
+        for k in temp_dict:
             self.done[k] = self.undone.pop(k)
 
     def undo_all_tasks(self):
-        temp = self.done.copy()
-        for k in temp:
+        temp_dict = self.done.copy()
+        for k in temp_dict:
             self.undone[k] = self.done.pop(k)
 
     def clear_all_tasks(self):
@@ -95,13 +113,7 @@ class Tasklist(object):
 
 
 def main():
-    #parser = argparse.ArgumentParser()
-    #parser.add_argument('init', help='Create a task list in current directory')
-    #args = parser.parse_args()
-    #print(args.init)
     tasks = Tasklist()
-    tasks.add_task('Math')
-    tasks.add_task('Programming')
     tasks.list_all_tasks()
 
 
