@@ -44,13 +44,27 @@ class Tasklist(object):
     def get_tasks(self):
         return self.tasks
 
+    def get_tasksdir(self):
+        return self.tasksdir
+
+    def get_free_id(self):
+        return self.free_ids.pop(0)
+
+    def get_free_ids_len(self):
+        return len(self.free_ids)
+
     def set_name(self, name):
         self.name = name
 
-    def add(self, text):
-        if self.num_of_tasks <= self.limit and len(self.free_ids) != 0:
-            id_ = self.free_ids.pop(0)
-            task = Task(id_, text)
+    def set_tasksdir(self, tasksdir):
+        self.tasksdir = tasksdir
+
+    def return_id(self, id_):
+        self.free_ids.append(id_)
+
+    def add(self, id_, text, status='unfinished'):
+        if self.num_of_tasks <= self.limit:
+            task = Task(id_, text, status)
             self.tasks[task.id_] = task
             self.num_of_tasks += 1
 
@@ -58,7 +72,7 @@ class Tasklist(object):
         if id_ in self.tasks:
             self.tasks.pop(id_)
             self.num_of_tasks -= 1
-            self.free_ids.append(id_)
+            self.return_id(id_)
 
     def change(self, id_, text):
         if id_ in self.tasks:
@@ -91,33 +105,7 @@ class Tasklist(object):
         print('=' * len(self.get_name()), '\n')
 
 
-def write_tasks(tasks, f):
-    ts = tasks.get_tasks()
-    for k in ts:
-        id_ = ts[k].get_id()
-        text = ts[k].get_text()
-        status = ts[k].get_status()
-        data = json.dumps({id_: (text, status)}, ensure_ascii=False,
-                                                 sort_keys=True)
-        f.write(data + '\n')
-
-
-def read_tasks(tasks, f):
-    pass
-
-
-def main():
-    tasks = Tasklist()
-    tasks.add('Math')
-    tasks.add('Programming')
-    tasks.add('Jogging')
-    tasks.finish(1)
-    tasks.finish(3)
-    tasks.list_all()
-
-    tasksdir = '.'
-    path = Path().resolve().joinpath(tasksdir, tasks.get_name() + '.json')
-
+def write_tasks(tasks, path):
     if path.is_dir():
         # TODO: raise custom exception
         pass
@@ -125,16 +113,54 @@ def main():
         if path.exists():
             try:
                 with path.open('w') as f:
-                    write_tasks(tasks, f)
+                    data = {}
+                    for k in tasks:
+                        data[tasks[k].get_id()] = {
+                            'text': tasks[k].get_text(),
+                            'status': tasks[k].get_status()
+                        }
+                    json.dump(data, f, ensure_ascii=False, indent=2)
+                    f.write('\n')
             except IOError:
                 # TODO: raise custom exception
                 pass
 
-    with path.open('r') as f:
-        lines = f.readlines()
-        for line in lines:
-            data = json.loads(line)
-            print(data)
+
+def read_tasks(tasks, path):
+    if path.is_dir():
+        # TODO: raise custom exception
+        pass
+    else:
+        if path.exists():
+            try:
+                with path.open('r') as f:
+                    data = json.load(f)
+                    for k in data:
+                        tasks.add(int(k), data[k]['text'], data[k]['status'])
+            except IOError:
+                # TODO: raise custom exception
+                pass
+
+
+def main():
+    tasks = Tasklist()
+    path = Path().resolve().joinpath(tasks.get_tasksdir(),
+                                     tasks.get_name() + '.json')
+    id_ = tasks.get_free_id()
+    tasks.add(id_, 'Programming')
+    id_ = tasks.get_free_id()
+    tasks.add(id_, 'Math')
+    id_ = tasks.get_free_id()
+    tasks.add(id_, 'Jogging')
+    id_ = tasks.get_free_id()
+    tasks.add(id_, 'Reading')
+    id_ = tasks.get_free_id()
+    tasks.add(id_, 'Movie')
+    read_tasks(tasks, path)
+    tasks.remove(5)
+    #tasks.finish(5)
+    write_tasks(tasks.get_tasks(), path)
+    tasks.list_all()
 
 
 if __name__ == '__main__':
