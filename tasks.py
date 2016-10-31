@@ -148,7 +148,7 @@ class Tasklist(object):
             pass
 
     @classmethod
-    def build_parser(cls):
+    def get_parser(cls):
         parser = argparse.ArgumentParser()
         parser.add_argument('-a', '--add',
                 help='add TASK to tasklist')
@@ -166,7 +166,7 @@ class Tasklist(object):
                 help='mark TASK as unfinished')
         parser.add_argument('-U', '--unfinish-all', action='store_true',
                 help='mark all TASKS as unfinished')
-        return parser.parse_args()
+        return parser
 
 
 def main():
@@ -175,7 +175,7 @@ def main():
     tasksdir = tasks.get_tasksdir()
     path = pathlib.Path().resolve().joinpath(tasksdir, filename)
     tasks.read_tasks(tasks, path)
-    args = tasks.build_parser()
+    args = tasks.get_parser().parse_args()
     if args.add:
         id_ = tasks.ids[0]
         tasks.ids.remove(id_)
