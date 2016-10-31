@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import argparse
 import json
-from pathlib import Path
+import pathlib
 
 class Task(object):
 
@@ -30,7 +33,7 @@ class Task(object):
 
 class Tasklist(object):
 
-    free_ids = [i for i in range(1, 100)]
+    ids = [i for i in range(1, 100)]
     num_of_tasks = 0
 
     def __init__(self, name='tasklist', tasksdir='.'):
@@ -48,20 +51,11 @@ class Tasklist(object):
     def get_tasksdir(self):
         return self.tasksdir
 
-    def get_free_id(self):
-        return self.free_ids.pop(0)
-
-    def get_free_ids_len(self):
-        return len(self.free_ids)
-
     def set_name(self, name):
         self.name = name
 
     def set_tasksdir(self, tasksdir):
         self.tasksdir = tasksdir
-
-    def return_id(self, id_):
-        self.free_ids.append(id_)
 
     def add(self, id_, text, status='unfinished'):
         if self.num_of_tasks <= self.limit:
@@ -69,20 +63,10 @@ class Tasklist(object):
             self.tasks[task.id_] = task
             self.num_of_tasks += 1
 
-    def remove(self, id_):
+    def edit(self, id_):
         if id_ in self.tasks:
-            self.tasks.pop(id_)
-            self.num_of_tasks -= 1
-            self.return_id(id_)
-
-    def remove_all(self):
-        self.tasks.clear()
-        self.free_ids = [i for i in range(1, 100)]
-        self.num_of_tasks = 0
-
-    def edit(self, id_, text):
-        if id_ in self.tasks:
-            self.tasks[id_].set_task(text)
+            text = input('enter change: ')
+            self.tasks[id_].set_text(text)
 
     def finish(self, id_):
         if id_ in self.tasks:
@@ -105,104 +89,131 @@ class Tasklist(object):
                     self.tasks[k].get_text()))
         print('=' * len(self.get_name()), '\n')
 
+    def remove(self, id_):
+        if id_ in self.tasks:
+            self.tasks.pop(id_)
+            self.num_of_tasks -= 1
 
-def write_tasks(tasks, path):
-        if path.exists() and path.is_file():
-            try:
-                with path.open('w') as f:
-                    data = {}
-                    for k in tasks:
-                        data[tasks[k].get_id()] = {
-                            'text': tasks[k].get_text(),
-                            'status': tasks[k].get_status()
-                        }
-                    json.dump(data, f, ensure_ascii=False, indent=2)
-                    f.write('\n')
-            except IOError:
+    def remove_all(self):
+        self.tasks.clear()
+        self.num_of_tasks = 0
+
+    def unfinish(self, id_):
+        if id_ in self.tasks:
+            self.tasks[id_].set_status('unfinished')
+
+    def unfinish_all(self):
+        temp_dict = self.tasks.copy()
+        for k in temp_dict:
+            self.tasks[k].set_status('unfinished')
+
+    @classmethod
+    def write_tasks(cls, tasks, path):
+            if path.exists() and path.is_file():
+                try:
+                    with path.open('w') as f:
+                        data = {}
+                        for k in tasks:
+                            data[tasks[k].get_id()] = {
+                                'id':tasks[k].get_id(),
+                                'text': tasks[k].get_text(),
+                                'status': tasks[k].get_status()
+                            }
+                        json.dump(data, f, ensure_ascii=False, indent=2)
+                        f.write('\n')
+                except IOError:
+                    # TODO: raise custom exception
+                    pass
+            else:
                 # TODO: raise custom exception
                 pass
+
+    @classmethod
+    def read_tasks(cls, tasks, path):
+        if path.exists() and path.is_file():
+            try:
+                with path.open('r') as f:
+                    data = json.load(f)
+                    for k in data:
+                        id_ = data[k]['id']
+                        tasks.ids.remove(id_)
+                        text = data[k]['text']
+                        status = data[k]['status']
+                        tasks.add(id_, text, status)
+            except IOError:
+                # TODO: raise BadPath exception
+                pass
         else:
-            # TODO: raise custom exception
-            pass
-
-
-def read_tasks(tasks, path):
-    if path.exists() and path.is_file():
-        try:
-            with path.open('r') as f:
-                data = json.load(f)
-                for k in data:
-                    tasks.add(int(k), data[k]['text'], data[k]['status'])
-        except IOError:
             # TODO: raise BadPath exception
             pass
-    else:
-        # TODO: raise BadPath exception
-        pass
+
+    @classmethod
+    def build_parser(cls):
+        parser = argparse.ArgumentParser()
+        parser.add_argument('-a', '--add',
+                help='add TASK to tasklist')
+        parser.add_argument('-e', '--edit', type=int,
+                help='edit TASK with specified id')
+        parser.add_argument('-f', '--finish', type=int,
+                help='mark TASK as finished')
+        parser.add_argument('-F', '--finish-all', action='store_true',
+                help='mark all TASKS as finished')
+        parser.add_argument('-r', '--remove', type=int,
+                help='remove TASK from tasklist')
+        parser.add_argument('-R', '--remove-all', action='store_true',
+                help='remove all TASKS from tasklist')
+        parser.add_argument('-u', '--unfinish', type=int,
+                help='mark TASK as unfinished')
+        parser.add_argument('-U', '--unfinish-all', action='store_true',
+                help='mark all TASKS as unfinished')
+        return parser.parse_args()
 
 
 def main():
     tasks = Tasklist()
-    path = Path().resolve().joinpath(tasks.get_tasksdir(),
-                                     tasks.get_name() + '.json')
-    read_tasks(tasks, path)
-
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-a', '--add', dest='add', type=str,
-            help='add TASK to tasklist')
-
-    parser.add_argument('-e', '--edit', dest='edit', nargs=2,
-            help='edit TASK with specified id')
-
-    parser.add_argument('-f', '--finish', dest='finish', type=int,
-            help='mark TASK as finished')
-
-    parser.add_argument('-F', '--finish-all', dest='finish-all',
-            action='store_true', help='mark all TASKS as finished')
-
-    parser.add_argument('-r', '--remove', dest='remove', type=int,
-            help='remove TASK from tasklist')
-
-    parser.add_argument('-R', '--remove-all', dest='remove-all',
-            action='store_true', help='remove all TASKS from tasklist')
-
-    parser.add_argument('-u', '--unfinish', dest='unfinish', type=int,
-            help='mark TASK as unfinished')
-
-    parser.add_argument('-U', '--unfinish-all', dest='unfinish-all',
-            action='store_true', help='mark all TASKS as unfinished')
-
-    args = parser.parse_args()
-
+    filename = tasks.get_name() + '.json'
+    tasksdir = tasks.get_tasksdir()
+    path = pathlib.Path().resolve().joinpath(tasksdir, filename)
+    tasks.read_tasks(tasks, path)
+    args = tasks.build_parser()
     if args.add:
-        tasks.add(args.add)
-        write_tasks(tasks.get_tasks(), path)
+        id_ = tasks.ids[0]
+        tasks.ids.remove(id_)
+        tasks.add(id_, args.add)
+        tasks.list_all()
+        tasks.write_tasks(tasks.get_tasks(), path)
+    elif args.edit:
+        tasks.edit(args.edit)
+        tasks.list_all()
+        tasks.write_tasks(tasks.get_tasks(), path)
     elif args.finish:
         tasks.finish(args.finish)
-        write_tasks(tasks.get_tasks(), path)
+        tasks.list_all()
+        tasks.write_tasks(tasks.get_tasks(), path)
     elif args.finish_all:
         tasks.finish_all()
-        write_tasks(tasks.get_tasks(), path)
-    elif args.edit:
-        tasks.edit(int(args.edit[0]), args.edit[1])
-        write_tasks(tasks.get_tasks(), path)
+        tasks.list_all()
+        tasks.write_tasks(tasks.get_tasks(), path)
     elif args.remove:
         tasks.remove(args.remove)
-        write_tasks(tasks.get_tasks(), path)
+        tasks.ids.append(args.remove)
+        tasks.list_all()
+        tasks.write_tasks(tasks.get_tasks(), path)
     elif args.remove_all:
         tasks.remove_all()
-        write_tasks(tasks.get_tasks(), path)
+        tasks.list_all()
+        tasks.write_tasks(tasks.get_tasks(), path)
     elif args.unfinish:
         tasks.unfinish(args.unfinish)
-        write_tasks(tasks.get_tasks(), path)
+        tasks.list_all()
+        tasks.write_tasks(tasks.get_tasks(), path)
     elif args.unfinish_all:
         tasks.unfinish_all()
-        write_tasks(tasks.get_tasks(), path)
+        tasks.list_all()
+        tasks.write_tasks(tasks.get_tasks(), path)
     else:
         tasks.list_all()
 
-    # TODO: finish parse options and make pretty output
 
 if __name__ == '__main__':
     main()
