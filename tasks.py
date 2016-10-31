@@ -150,22 +150,22 @@ class Tasklist(object):
     @classmethod
     def get_parser(cls):
         parser = argparse.ArgumentParser()
-        parser.add_argument('-a', '--add',
-                help='add TASK to tasklist')
-        parser.add_argument('-e', '--edit', type=int,
-                help='edit TASK with specified id')
-        parser.add_argument('-f', '--finish', type=int,
-                help='mark TASK as finished')
-        parser.add_argument('-F', '--finish-all', action='store_true',
-                help='mark all TASKS as finished')
-        parser.add_argument('-r', '--remove', type=int,
-                help='remove TASK from tasklist')
-        parser.add_argument('-R', '--remove-all', action='store_true',
-                help='remove all TASKS from tasklist')
-        parser.add_argument('-u', '--unfinish', type=int,
-                help='mark TASK as unfinished')
-        parser.add_argument('-U', '--unfinish-all', action='store_true',
-                help='mark all TASKS as unfinished')
+        parser.add_argument('-a', '--add', dest='add',
+                help='add TASK to tasklist', metavar='TASK')
+        parser.add_argument('-e', '--edit', dest='edit', type=int,
+                help='edit task with specified ID', metavar='ID')
+        parser.add_argument('-f', '--finish', dest='finish', type=int,
+                help='mark task with specified ID as finished', metavar='ID')
+        parser.add_argument('-F', '--finish-all', dest='finish_all',
+                action='store_true', help='mark all tasks as finished')
+        parser.add_argument('-r', '--remove', dest='remove', type=int,
+                help='remove task with specified ID', metavar='ID')
+        parser.add_argument('-R', '--remove-all', dest='remove_all',
+                action='store_true', help='remove all tasks')
+        parser.add_argument('-u', '--unfinish', dest='unfinish', type=int,
+                help='mark task with specified ID as unfinished', metavar='ID')
+        parser.add_argument('-U', '--unfinish-all', dest='unfinish_all',
+                action='store_true', help='mark all tasks as unfinished')
         return parser
 
 
