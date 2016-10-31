@@ -169,7 +169,7 @@ class Tasklist(object):
         return parser
 
 
-def main():
+if __name__ == '__main__':
     tasks = Tasklist()
     filename = tasks.get_name() + '.json'
     tasksdir = tasks.get_tasksdir()
@@ -213,7 +213,3 @@ def main():
         tasks.write_tasks(tasks.get_tasks(), path)
     else:
         tasks.list_all()
-
-
-if __name__ == '__main__':
-    main()
