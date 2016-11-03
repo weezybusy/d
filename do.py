@@ -142,7 +142,7 @@ def write_tasks(tasks, taskfile):
         except IOError as e:
             print(e)
     else:
-        print('No such file')
+        print('[INFO] No such file')
 
 
 def read_tasks(tasks, taskfile):
