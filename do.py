@@ -42,28 +42,32 @@ class Tasklist(object):
         self.tasks = {}
         self.limit = 99
 
-    def get_limit(self):
-        return self.limit
-
     def get_tasks(self):
         return self.tasks
+
+    def get_limit(self):
+        return self.limit
 
     def set_limit(self, limit):
         if limit > 0:
             self.limit = limit
 
-    def append_id(self, id_):
+    def __append_id(self, id_):
         self.ids.append(id_)
 
-    def remove_id(self, id_):
+    def __remove_id(self, id_):
         self.ids.remove(id_)
 
-    def pop_id(self):
+    def __pop_id(self):
         if len(self.ids) > 0:
             return self.ids.pop(0)
 
     def add(self, id_, text, status='unfinished'):
         if self.num_of_tasks <= self.limit:
+            if (id_ == None):
+                id_ = self.__pop_id()
+            else:
+                self.__remove_id(id_)
             task = Task(id_, text, status)
             self.tasks[task.id_] = task
             self.num_of_tasks += 1
@@ -88,10 +92,10 @@ class Tasklist(object):
 
     def list_all(self):
         if self.num_of_tasks == 0:
-            print('\nNo tasks')
+            print('\n[INFO] No tasks yet. Run `do -a your_task` to add one')
         else:
             print('')
-            for k in self.tasks.keys():
+            for k in self.tasks:
                 print('{:2}. [{}] {}'.format(self.tasks[k].get_id(),
                     'X' if self.tasks[k].get_status() == 'finished' else ' ',
                     self.tasks[k].get_text()))
@@ -100,7 +104,7 @@ class Tasklist(object):
     def remove(self, id_):
         if id_ in self.tasks:
             self.tasks.pop(id_)
-            self.append_id(id_)
+            self.__append_id(id_)
             self.num_of_tasks -= 1
         else:
             print('[INFO] No task with such id')
@@ -150,7 +154,6 @@ def read_tasks(tasks, taskfile):
                         data = json.load(f)
                         for k in data:
                             id_ = data[k]['id']
-                            tasks.remove_id(id_)
                             text = data[k]['text']
                             status = data[k]['status']
                             tasks.add(id_, text, status)
@@ -160,7 +163,7 @@ def read_tasks(tasks, taskfile):
                 print(e)
     else:
         print('Task list doesn\'t exist yet. ' \
-              'Run program with -i option to create it.')
+              'Run `do --init` to create it.')
 
 
 def get_parser():
@@ -174,7 +177,7 @@ def get_parser():
     parser.add_argument('-F', '--finish-all', dest='finish_all',
             action='store_true', help='mark all tasks as finished')
     parser.add_argument('--init', dest='init', action='store_true',
-            help='create task list')
+            help='create task list in current working directory')
     parser.add_argument('-r', '--remove', dest='remove', type=int,
             help='remove task with specified ID', metavar='ID')
     parser.add_argument('-R', '--remove-all', dest='remove_all',
@@ -196,8 +199,7 @@ if __name__ == '__main__':
         taskfile.touch()
     read_tasks(tasks, taskfile)
     if args.add:
-        id_ = tasks.pop_id()
-        tasks.add(id_, args.add)
+        tasks.add(None, args.add)
         tasks.list_all()
         write_tasks(tasks.get_tasks(), taskfile)
     elif args.change:
@@ -214,7 +216,6 @@ if __name__ == '__main__':
         write_tasks(tasks.get_tasks(), taskfile)
     elif args.remove:
         tasks.remove(args.remove)
-        tasks.append_id(args.remove)
         tasks.list_all()
         write_tasks(tasks.get_tasks(), taskfile)
     elif args.remove_all:
@@ -230,4 +231,5 @@ if __name__ == '__main__':
         tasks.list_all()
         write_tasks(tasks.get_tasks(), taskfile)
     else:
-        tasks.list_all()
+        if taskfile.exists():
+            tasks.list_all()
