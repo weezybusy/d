@@ -52,16 +52,6 @@ class Tasklist(object):
         if limit > 0:
             self.limit = limit
 
-    def __append_id(self, id_):
-        self.ids.append(id_)
-
-    def __remove_id(self, id_):
-        self.ids.remove(id_)
-
-    def __pop_id(self):
-        if len(self.ids) > 0:
-            return self.ids.pop(0)
-
     def add(self, id_, text, status='unfinished'):
         if self.num_of_tasks <= self.limit:
             if (id_ == None):
@@ -124,6 +114,16 @@ class Tasklist(object):
         temp_dict = self.tasks.copy()
         for k in temp_dict:
             self.tasks[k].set_status('unfinished')
+
+    def __append_id(self, id_):
+        self.ids.append(id_)
+
+    def __remove_id(self, id_):
+        self.ids.remove(id_)
+
+    def __pop_id(self):
+        if len(self.ids) > 0:
+            return self.ids.pop(0)
 
 
 def write_tasks(tasks, taskfile):
