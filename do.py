@@ -4,12 +4,10 @@
 import argparse
 import json
 import pathlib
-#import tests
-#import unittest
 
 class Task(object):
 
-    def __init__(self, id_, text, status='unfinished'):
+    def __init__(self, id_=1, text='text', status='unfinished'):
         self.id_ = id_
         self.text = text
         self.status = status
@@ -24,13 +22,15 @@ class Task(object):
         return self.status
 
     def set_id(self, id_):
-        self.id_ = id_
+        if id_ > 0:
+            self.id_ = id_
 
     def set_text(self, text):
         self.text = text
 
     def set_status(self, status):
-        self.status = status
+        if status in ['finished', 'unfinished']:
+            self.status = status
 
 
 class Tasklist(object):
@@ -42,8 +42,15 @@ class Tasklist(object):
         self.tasks = {}
         self.limit = 99
 
+    def get_limit(self):
+        return self.limit
+
     def get_tasks(self):
         return self.tasks
+
+    def set_limit(self, limit):
+        if limit > 0:
+            self.limit = limit
 
     def append_id(self, id_):
         self.ids.append(id_)
@@ -52,13 +59,16 @@ class Tasklist(object):
         self.ids.remove(id_)
 
     def pop_id(self):
-        return self.ids.pop(0)
+        if len(self.ids) > 0:
+            return self.ids.pop(0)
 
     def add(self, id_, text, status='unfinished'):
         if self.num_of_tasks <= self.limit:
             task = Task(id_, text, status)
             self.tasks[task.id_] = task
             self.num_of_tasks += 1
+        else:
+            print('[INFO] Exceeded tasks limit')
 
     def change(self, id_):
         if id_ in self.tasks:
@@ -68,6 +78,8 @@ class Tasklist(object):
     def finish(self, id_):
         if id_ in self.tasks:
             self.tasks[id_].set_status('finished')
+        else:
+            print('[INFO] No task with such id')
 
     def finish_all(self):
         temp_dict = self.tasks.copy()
@@ -88,15 +100,21 @@ class Tasklist(object):
     def remove(self, id_):
         if id_ in self.tasks:
             self.tasks.pop(id_)
+            self.append_id(id_)
             self.num_of_tasks -= 1
+        else:
+            print('[INFO] No task with such id')
 
     def remove_all(self):
         self.tasks.clear()
         self.num_of_tasks = 0
+        self.ids = [i for i in range(1, 100)]
 
     def unfinish(self, id_):
         if id_ in self.tasks:
             self.tasks[id_].set_status('unfinished')
+        else:
+            print('[INFO] No task with such id')
 
     def unfinish_all(self):
         temp_dict = self.tasks.copy()
@@ -155,8 +173,8 @@ def get_parser():
             help='mark task with specified ID as finished', metavar='ID')
     parser.add_argument('-F', '--finish-all', dest='finish_all',
             action='store_true', help='mark all tasks as finished')
-    parser.add_argument('-i', '--init', dest='init', action='store_true',
-            help='create tasks file')
+    parser.add_argument('--init', dest='init', action='store_true',
+            help='create task list')
     parser.add_argument('-r', '--remove', dest='remove', type=int,
             help='remove task with specified ID', metavar='ID')
     parser.add_argument('-R', '--remove-all', dest='remove_all',
