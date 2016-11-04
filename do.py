@@ -63,7 +63,7 @@ class Tasklist(object):
             self.tasks[task.id_] = task
             self.num_of_tasks += 1
         else:
-            print('\nError: exceeded {} tasks limit\n'.format(self.limit))
+            print('\nError: exceeded {} tasks limit.\n'.format(self.limit))
 
     def change(self, id_):
         if id_ in self.tasks:
@@ -71,7 +71,7 @@ class Tasklist(object):
             self.tasks[id_].set_text(text)
             return True
         else:
-            print('\nError: no task with id {}\n'.format(id_))
+            print('\nError: no task with id {}.\n'.format(id_))
             return False
 
     def finish(self, id_):
@@ -79,7 +79,7 @@ class Tasklist(object):
             self.tasks[id_].set_status(1)
             return True
         else:
-            print('\nError: no task with id {}\n'.format(id_))
+            print('\nError: no task with id {}.\n'.format(id_))
             return False
 
     def finish_all(self):
@@ -88,7 +88,7 @@ class Tasklist(object):
 
     def list_all(self):
         if self.num_of_tasks == 0:
-            print('\nTask list is empty\n')
+            print('\nTask list is empty.\n')
         else:
             print('')
             for k in self.tasks:
@@ -104,7 +104,7 @@ class Tasklist(object):
             self.num_of_tasks -= 1
             return True
         else:
-            print('\nError: no task with id {}\n'.format(id_))
+            print('\nError: no task with id {}.\n'.format(id_))
             return False
 
     def remove_all(self):
@@ -117,7 +117,7 @@ class Tasklist(object):
             self.tasks[id_].set_status(0)
             return True
         else:
-            print('\nError: no task with id {}\n'.format(id_))
+            print('\nError: no task with id {}.\n'.format(id_))
             return False
 
     def unfinish_all(self):
@@ -208,7 +208,7 @@ if __name__ == '__main__':
     if taskfile.exists():
         read_tasks(tasks, taskfile)
     else:
-        print('\nhint: run `do --init` to create task list\n')
+        print('\nhint: run `do --init` to create task list.\n')
         sys.exit()
 
     if args.add:
