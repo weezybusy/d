@@ -4,10 +4,11 @@
 import argparse
 import json
 import pathlib
+import sys
 
 class Task(object):
 
-    def __init__(self, id_=1, text='text', status='unfinished'):
+    def __init__(self, id_=1, text='text', status=0):
         self.id_ = id_
         self.text = text
         self.status = status
@@ -29,7 +30,7 @@ class Task(object):
         self.text = text
 
     def set_status(self, status):
-        if status in ['finished', 'unfinished']:
+        if status in (0, 1):
             self.status = status
 
 
@@ -52,7 +53,7 @@ class Tasklist(object):
         if limit > 0:
             self.limit = limit
 
-    def add(self, id_, text, status='unfinished'):
+    def add(self, text, id_=None, status=0):
         if self.num_of_tasks <= self.limit:
             if (id_ == None):
                 id_ = self.__pop_id()
@@ -62,42 +63,49 @@ class Tasklist(object):
             self.tasks[task.id_] = task
             self.num_of_tasks += 1
         else:
-            print('[INFO] Exceeded tasks limit')
+            print('\nError: exceeded {} tasks limit\n'.format(self.limit))
 
     def change(self, id_):
         if id_ in self.tasks:
-            text = input('task: ')
+            text = input('text: ')
             self.tasks[id_].set_text(text)
+            return True
+        else:
+            print('\nError: no task with id {}\n'.format(id_))
+            return False
 
     def finish(self, id_):
         if id_ in self.tasks:
-            self.tasks[id_].set_status('finished')
+            self.tasks[id_].set_status(1)
+            return True
         else:
-            print('[INFO] No task with such id')
+            print('\nError: no task with id {}\n'.format(id_))
+            return False
 
     def finish_all(self):
-        temp_dict = self.tasks.copy()
-        for k in temp_dict:
-            self.tasks[k].set_status('finished')
+        for k in self.tasks:
+            self.tasks[k].set_status(1)
 
     def list_all(self):
         if self.num_of_tasks == 0:
-            print('\n[INFO] No tasks yet. Run `do -a your_task` to add one')
+            print('\nTask list is empty\n')
         else:
             print('')
             for k in self.tasks:
                 print('{:2}. [{}] {}'.format(self.tasks[k].get_id(),
-                    'X' if self.tasks[k].get_status() == 'finished' else ' ',
+                    'X' if self.tasks[k].get_status() else ' ',
                     self.tasks[k].get_text()))
-        print('')
+            print('')
 
     def remove(self, id_):
         if id_ in self.tasks:
             self.tasks.pop(id_)
             self.__append_id(id_)
             self.num_of_tasks -= 1
+            return True
         else:
-            print('[INFO] No task with such id')
+            print('\nError: no task with id {}\n'.format(id_))
+            return False
 
     def remove_all(self):
         self.tasks.clear()
@@ -106,14 +114,15 @@ class Tasklist(object):
 
     def unfinish(self, id_):
         if id_ in self.tasks:
-            self.tasks[id_].set_status('unfinished')
+            self.tasks[id_].set_status(0)
+            return True
         else:
-            print('[INFO] No task with such id')
+            print('\nError: no task with id {}\n'.format(id_))
+            return False
 
     def unfinish_all(self):
-        temp_dict = self.tasks.copy()
-        for k in temp_dict:
-            self.tasks[k].set_status('unfinished')
+        for k in self.tasks:
+            self.tasks[k].set_status(0)
 
     def __append_id(self, id_):
         self.ids.append(id_)
@@ -127,43 +136,37 @@ class Tasklist(object):
 
 
 def write_tasks(tasks, taskfile):
-    if taskfile.exists():
-        try:
-            with taskfile.open('w') as f:
-                data = {}
-                for k in tasks:
-                    data[tasks[k].get_id()] = {
-                        'id':tasks[k].get_id(),
-                        'text': tasks[k].get_text(),
-                        'status': tasks[k].get_status()
-                    }
-                json.dump(data, f, ensure_ascii=False, indent=2)
-                f.write('\n')
-        except IOError as e:
-            print(e)
-    else:
-        print('[INFO] No such file')
+    ts = tasks.get_tasks()
+    try:
+        with taskfile.open('w') as f:
+            data = {}
+            for k in ts:
+                data[ts[k].get_id()] = {
+                    'id': ts[k].get_id(),
+                    'text': ts[k].get_text(),
+                    'status': ts[k].get_status()
+                }
+            json.dump(data, f, ensure_ascii=False, indent=2)
+            f.write('\n')
+    except IOError as e:
+        print(e)
 
 
 def read_tasks(tasks, taskfile):
-    if taskfile.exists():
-        if taskfile.stat().st_size > 0:
-            try:
-                with taskfile.open('r') as f:
-                    try:
-                        data = json.load(f)
-                        for k in data:
-                            id_ = data[k]['id']
-                            text = data[k]['text']
-                            status = data[k]['status']
-                            tasks.add(id_, text, status)
-                    except ValueError as e:
-                        print(e)
-            except IOError as e:
-                print(e)
-    else:
-        print('Task list doesn\'t exist yet. ' \
-              'Run `do --init` to create it.')
+    if taskfile.stat().st_size > 0:
+        try:
+            with taskfile.open('r') as f:
+                try:
+                    data = json.load(f)
+                    for k in data:
+                        id_ = data[k]['id']
+                        text = data[k]['text']
+                        status = data[k]['status']
+                        tasks.add(text, id_, status)
+                except ValueError as e:
+                    print(e)
+        except IOError as e:
+            print(e)
 
 
 def get_parser():
@@ -178,6 +181,8 @@ def get_parser():
             action='store_true', help='mark all tasks as finished')
     parser.add_argument('--init', dest='init', action='store_true',
             help='create task list in current working directory')
+    parser.add_argument('-l', '--list-all', dest='list_all',
+            action='store_true', help='list all tasks')
     parser.add_argument('-r', '--remove', dest='remove', type=int,
             help='remove task with specified ID', metavar='ID')
     parser.add_argument('-R', '--remove-all', dest='remove_all',
@@ -186,8 +191,6 @@ def get_parser():
             help='mark task with specified ID as unfinished', metavar='ID')
     parser.add_argument('-U', '--unfinish-all', dest='unfinish_all',
             action='store_true', help='mark all tasks as unfinished')
-    parser.add_argument('-v', '--version', action='version',
-            version='do 0.1')
     return parser
 
 
@@ -195,41 +198,47 @@ if __name__ == '__main__':
     tasks = Tasklist()
     args = get_parser().parse_args()
     taskfile = pathlib.Path().resolve().joinpath('todo.json')
+
     if args.init:
         taskfile.touch()
-    read_tasks(tasks, taskfile)
+        print('\nTask list has been successfully created.')
+        print('Type do -a <your_task> to add task.\n' \
+              'Type do -h to see all available options.\n')
+
+    if taskfile.exists():
+        read_tasks(tasks, taskfile)
+    else:
+        print('\nhint: run `do --init` to create task list\n')
+        sys.exit()
+
     if args.add:
-        tasks.add(None, args.add)
-        tasks.list_all()
-        write_tasks(tasks.get_tasks(), taskfile)
+        text = args.add
+        tasks.add(text)
+        write_tasks(tasks, taskfile)
     elif args.change:
-        tasks.change(args.change)
-        tasks.list_all()
-        write_tasks(tasks.get_tasks(), taskfile)
+        id_ = args.change
+        if tasks.change(id_):
+            write_tasks(tasks, taskfile)
     elif args.finish:
-        tasks.finish(args.finish)
-        tasks.list_all()
-        write_tasks(tasks.get_tasks(), taskfile)
+        id_ = args.finish
+        if tasks.finish(id_):
+            write_tasks(tasks, taskfile)
     elif args.finish_all:
         tasks.finish_all()
-        tasks.list_all()
-        write_tasks(tasks.get_tasks(), taskfile)
+        write_tasks(tasks, taskfile)
     elif args.remove:
-        tasks.remove(args.remove)
-        tasks.list_all()
-        write_tasks(tasks.get_tasks(), taskfile)
+        id_ = args.remove
+        if tasks.remove(id_):
+            write_tasks(tasks, taskfile)
     elif args.remove_all:
         tasks.remove_all()
-        tasks.list_all()
-        write_tasks(tasks.get_tasks(), taskfile)
+        write_tasks(tasks, taskfile)
     elif args.unfinish:
-        tasks.unfinish(args.unfinish)
-        tasks.list_all()
-        write_tasks(tasks.get_tasks(), taskfile)
+        id_ = args.unfinish
+        if tasks.unfinish(id_):
+            write_tasks(tasks, taskfile)
     elif args.unfinish_all:
         tasks.unfinish_all()
+        write_tasks(tasks, taskfile)
+    if args.list_all:
         tasks.list_all()
-        write_tasks(tasks.get_tasks(), taskfile)
-    else:
-        if taskfile.exists():
-            tasks.list_all()
