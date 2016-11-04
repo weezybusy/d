@@ -48,10 +48,6 @@ class Tasklist(object):
     def get_limit(self):
         return self.limit
 
-    def set_limit(self, limit):
-        if limit > 0:
-            self.limit = limit
-
     def add(self, text, id_=None, status=0):
         if self.num_of_tasks <= self.limit:
             if (id_ == None):
