@@ -143,7 +143,6 @@ def write_tasks(tasks, taskfile):
                     'status': ts[task].get_status()
                 }
             json.dump(data, f, ensure_ascii=False, indent=2)
-            f.write('\n')
     except IOError as e:
         print(e)
 
