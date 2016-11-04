@@ -45,20 +45,20 @@ class Tasklist(object):
     def get_tasks(self):
         return self.tasks
 
-    def get_limit(self):
-        return self.limit
-
     def add(self, text, id_=None, status=0):
         if self.num_of_tasks <= self.limit:
-            if (id_ == None):
-                id_ = self.__pop_id()
+            if id_ is None:
+                if self.ids:
+                    id_ = self.ids.pop(0)
             else:
-                self.__remove_id(id_)
-            task = Task(id_, text, status)
-            self.tasks[task.id_] = task
-            self.num_of_tasks += 1
+                if id_ in self.ids:
+                    self.ids.remove(id_)
+            if id_ is not None:
+                task = Task(id_, text, status)
+                self.tasks[task.id_] = task
+                self.num_of_tasks += 1
         else:
-            print('\nExceeded {} tasks limit.\n'.format(self.limit))
+            print('\nExceeded {N} tasks limit.\n'.format(N=self.limit))
 
     def change(self, id_):
         if id_ in self.tasks:
@@ -66,7 +66,7 @@ class Tasklist(object):
             self.tasks[id_].set_text(text)
             return True
         else:
-            print('\nNo task with id {}.\n'.format(id_))
+            print('\nNo task with id {N}.\n'.format(N=id_))
             return False
 
     def finish(self, id_):
@@ -74,33 +74,37 @@ class Tasklist(object):
             self.tasks[id_].set_status(1)
             return True
         else:
-            print('\nNo task with id {}.\n'.format(id_))
+            print('\nNo task with id {N}.\n'.format(N=id_))
             return False
 
     def finish_all(self):
-        for k in self.tasks:
-            self.tasks[k].set_status(1)
+        for t in self.tasks:
+            self.tasks[t].set_status(1)
 
     def list_all(self):
-        if self.num_of_tasks == 0:
-            print('\nTask list is empty.\n')
+        if self.num_of_tasks:
+            print('')
+            for t in self.tasks:
+                id_ = self.tasks[t].get_id()
+                text = self.tasks[t].get_text()
+                status = self.tasks[t].get_status()
+                print('{id_:2}. [{status}] {text}'.format(
+                    id_=id_,
+                    status='X' if status else ' ',
+                    text=text
+                ))
+            print('')
         else:
-            print('')
-            for task in self.tasks:
-                id_ = self.tasks[task].get_id()
-                text = self.tasks[task].get_text()
-                status = self.tasks[task].get_status()
-                print('{:2}. [{}] {}'.format(id_, 'X' if status else ' ', text))
-            print('')
+            print('\nTask list is empty.\n')
 
     def remove(self, id_):
         if id_ in self.tasks:
             self.tasks.pop(id_)
-            self.__append_id(id_)
+            self.ids.append(id_)
             self.num_of_tasks -= 1
             return True
         else:
-            print('\nNo task with id {}.\n'.format(id_))
+            print('\nNo task with id {N}.\n'.format(N=id_))
             return False
 
     def remove_all(self):
@@ -113,34 +117,27 @@ class Tasklist(object):
             self.tasks[id_].set_status(0)
             return True
         else:
-            print('\nNo task with id {}.\n'.format(id_))
+            print('\nNo task with id {N}.\n'.format(N=id_))
             return False
 
     def unfinish_all(self):
-        for k in self.tasks:
-            self.tasks[k].set_status(0)
-
-    def __append_id(self, id_):
-        self.ids.append(id_)
-
-    def __remove_id(self, id_):
-        self.ids.remove(id_)
-
-    def __pop_id(self):
-        if len(self.ids) > 0:
-            return self.ids.pop(0)
+        for t in self.tasks:
+            self.tasks[t].set_status(0)
 
 
 def write_tasks(tasks, taskfile):
-    ts = tasks.get_tasks()
     try:
         with taskfile.open('w') as f:
             data = {}
-            for task in ts:
-                data[ts[task].get_id()] = {
-                    'id': ts[task].get_id(),
-                    'text': ts[task].get_text(),
-                    'status': ts[task].get_status()
+            ts = tasks.get_tasks()
+            for t in ts:
+                id_ = ts[t].get_id()
+                text = ts[t].get_text()
+                status = ts[t].get_status()
+                data[id_] = {
+                    'id': id_,
+                    'text': text,
+                    'status': status
                 }
             json.dump(data, f, ensure_ascii=False, indent=2)
     except IOError as e:
@@ -190,7 +187,7 @@ def get_parser():
     return parser
 
 
-if __name__ == '__main__':
+def main():
     args = get_parser().parse_args()
     taskfile = pathlib.Path().resolve().joinpath('todo.json')
 
@@ -236,3 +233,7 @@ if __name__ == '__main__':
             tasks.list_all()
     else:
         print('\nType do --init to create task list.\n')
+
+
+if __name__ == '__main__':
+    main()
