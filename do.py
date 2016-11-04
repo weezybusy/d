@@ -4,7 +4,6 @@
 import argparse
 import json
 import pathlib
-import sys
 
 class Task(object):
 
@@ -63,7 +62,7 @@ class Tasklist(object):
             self.tasks[task.id_] = task
             self.num_of_tasks += 1
         else:
-            print('\nError: exceeded {} tasks limit.\n'.format(self.limit))
+            print('\nExceeded {} tasks limit.\n'.format(self.limit))
 
     def change(self, id_):
         if id_ in self.tasks:
@@ -71,7 +70,7 @@ class Tasklist(object):
             self.tasks[id_].set_text(text)
             return True
         else:
-            print('\nError: no task with id {}.\n'.format(id_))
+            print('\nNo task with id {}.\n'.format(id_))
             return False
 
     def finish(self, id_):
@@ -79,7 +78,7 @@ class Tasklist(object):
             self.tasks[id_].set_status(1)
             return True
         else:
-            print('\nError: no task with id {}.\n'.format(id_))
+            print('\nNo task with id {}.\n'.format(id_))
             return False
 
     def finish_all(self):
@@ -104,7 +103,7 @@ class Tasklist(object):
             self.num_of_tasks -= 1
             return True
         else:
-            print('\nError: no task with id {}.\n'.format(id_))
+            print('\nNo task with id {}.\n'.format(id_))
             return False
 
     def remove_all(self):
@@ -117,7 +116,7 @@ class Tasklist(object):
             self.tasks[id_].set_status(0)
             return True
         else:
-            print('\nError: no task with id {}.\n'.format(id_))
+            print('\nNo task with id {}.\n'.format(id_))
             return False
 
     def unfinish_all(self):
@@ -170,7 +169,8 @@ def read_tasks(tasks, taskfile):
 
 
 def get_parser():
-    parser = argparse.ArgumentParser()
+    usage = 'do [-hlFRU] [--init] [-a TASK] [-cfru ID]'
+    parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument('-a', '--add', dest='add',
             help='add TASK to tasklist', metavar='TASK')
     parser.add_argument('-c', '--change', dest='change', type=int,
@@ -195,50 +195,48 @@ def get_parser():
 
 
 if __name__ == '__main__':
-    tasks = Tasklist()
     args = get_parser().parse_args()
     taskfile = pathlib.Path().resolve().joinpath('todo.json')
 
     if args.init:
         taskfile.touch()
-        print('\nTask list has been successfully created.')
-        print('Type do -a <your_task> to add task.\n' \
+        print('\nTask list has been successfully created.\n' \
+              'Type do -a <task> to add task.\n'             \
               'Type do -h to see all available options.\n')
 
     if taskfile.exists():
+        tasks = Tasklist()
         read_tasks(tasks, taskfile)
+        if args.add:
+            text = args.add
+            tasks.add(text)
+            write_tasks(tasks, taskfile)
+        if args.change:
+            id_ = args.change
+            if tasks.change(id_):
+                write_tasks(tasks, taskfile)
+        if args.finish:
+            id_ = args.finish
+            if tasks.finish(id_):
+                write_tasks(tasks, taskfile)
+        if args.finish_all:
+            tasks.finish_all()
+            write_tasks(tasks, taskfile)
+        if args.remove:
+            id_ = args.remove
+            if tasks.remove(id_):
+                write_tasks(tasks, taskfile)
+        if args.remove_all:
+            tasks.remove_all()
+            write_tasks(tasks, taskfile)
+        if args.unfinish:
+            id_ = args.unfinish
+            if tasks.unfinish(id_):
+                write_tasks(tasks, taskfile)
+        if args.unfinish_all:
+            tasks.unfinish_all()
+            write_tasks(tasks, taskfile)
+        if args.list_all:
+            tasks.list_all()
     else:
-        print('\nhint: run `do --init` to create task list.\n')
-        sys.exit()
-
-    if args.add:
-        text = args.add
-        tasks.add(text)
-        write_tasks(tasks, taskfile)
-    elif args.change:
-        id_ = args.change
-        if tasks.change(id_):
-            write_tasks(tasks, taskfile)
-    elif args.finish:
-        id_ = args.finish
-        if tasks.finish(id_):
-            write_tasks(tasks, taskfile)
-    elif args.finish_all:
-        tasks.finish_all()
-        write_tasks(tasks, taskfile)
-    elif args.remove:
-        id_ = args.remove
-        if tasks.remove(id_):
-            write_tasks(tasks, taskfile)
-    elif args.remove_all:
-        tasks.remove_all()
-        write_tasks(tasks, taskfile)
-    elif args.unfinish:
-        id_ = args.unfinish
-        if tasks.unfinish(id_):
-            write_tasks(tasks, taskfile)
-    elif args.unfinish_all:
-        tasks.unfinish_all()
-        write_tasks(tasks, taskfile)
-    if args.list_all:
-        tasks.list_all()
+        print('\nType do --init to create task list.\n')
