@@ -86,10 +86,11 @@ class Tasklist(object):
             print('\nTask list is empty.\n')
         else:
             print('')
-            for k in self.tasks:
-                print('{:2}. [{}] {}'.format(self.tasks[k].get_id(),
-                    'X' if self.tasks[k].get_status() else ' ',
-                    self.tasks[k].get_text()))
+            for task in self.tasks:
+                id_ = self.tasks[task].get_id()
+                text = self.tasks[task].get_text()
+                status = self.tasks[task].get_status()
+                print('{:2}. [{}] {}'.format(id_, 'X' if status else ' ', text))
             print('')
 
     def remove(self, id_):
@@ -135,11 +136,11 @@ def write_tasks(tasks, taskfile):
     try:
         with taskfile.open('w') as f:
             data = {}
-            for k in ts:
-                data[ts[k].get_id()] = {
-                    'id': ts[k].get_id(),
-                    'text': ts[k].get_text(),
-                    'status': ts[k].get_status()
+            for task in ts:
+                data[ts[task].get_id()] = {
+                    'id': ts[task].get_id(),
+                    'text': ts[task].get_text(),
+                    'status': ts[task].get_status()
                 }
             json.dump(data, f, ensure_ascii=False, indent=2)
             f.write('\n')
