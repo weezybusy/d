@@ -40,9 +40,6 @@ class Tasklist(object):
         self.tasks = {}
         self.ids = [i for i in range(1, 100)]
 
-    def get_tasks(self):
-        return self.tasks
-
     def add(self, text, id_=None, status=0):
         if self.ids:
             if id_ is None:
