@@ -107,44 +107,39 @@ class Tasklist(object):
             sys.exit()
 
     def unfinish_all(self):
-        #for t in self.tasks:
-        #    self.tasks[t].set_status(0)
         for task in self.tasks.values():
             task.set_status(0)
 
+    def read(self, taskfile):
+        if taskfile.stat().st_size > 0:
+            try:
+                with taskfile.open('r') as f:
+                    try:
+                        data = json.load(f)
+                        for k in data:
+                            id_ = data[k]['id']
+                            text = data[k]['text']
+                            status = data[k]['status']
+                            self.add(text, id_, status)
+                    except ValueError as e:
+                        print(e)
+            except IOError as e:
+                print(e)
 
-def write_tasks(tasks, taskfile):
-    try:
-        with taskfile.open('w') as f:
-            data = {}
-            ts = tasks.get_tasks()
-            for t in ts:
-                id_ = ts[t].get_id()
-                text = ts[t].get_text()
-                status = ts[t].get_status()
-                data[id_] = {
-                    'id': id_,
-                    'text': text,
-                    'status': status
-                }
-            json.dump(data, f, ensure_ascii=False, indent=2)
-    except IOError as e:
-        print(e)
-
-
-def read_tasks(tasks, taskfile):
-    if taskfile.stat().st_size > 0:
+    def write(self, taskfile):
         try:
-            with taskfile.open('r') as f:
-                try:
-                    data = json.load(f)
-                    for k in data:
-                        id_ = data[k]['id']
-                        text = data[k]['text']
-                        status = data[k]['status']
-                        tasks.add(text, id_, status)
-                except ValueError as e:
-                    print(e)
+            with taskfile.open('w') as f:
+                data = {}
+                for task in self.tasks.values():
+                    id_ = task.get_id()
+                    text = task.get_text()
+                    status = task.get_status()
+                    data[id_] = {
+                        'id': id_,
+                        'text': text,
+                        'status': status
+                    }
+                json.dump(data, f, ensure_ascii=False, indent=2)
         except IOError as e:
             print(e)
 
@@ -185,36 +180,29 @@ def main():
               'Type do -h to see all available options.')
     elif taskfile.exists():
         tasks = Tasklist()
-        read_tasks(tasks, taskfile)
+        tasks.read(taskfile)
         if args.add:
             text = args.add
             tasks.add(text)
-            write_tasks(tasks, taskfile)
         if args.change:
             id_ = args.change
             tasks.change(id_)
-            write_tasks(tasks, taskfile)
         if args.finish:
             id_ = args.finish
             tasks.finish(id_)
-            write_tasks(tasks, taskfile)
         if args.finish_all:
             tasks.finish_all()
-            write_tasks(tasks, taskfile)
         if args.remove:
             id_ = args.remove
             tasks.remove(id_)
-            write_tasks(tasks, taskfile)
         if args.remove_all:
             tasks.remove_all()
-            write_tasks(tasks, taskfile)
         if args.unfinish:
             id_ = args.unfinish
             tasks.unfinish(id_)
-            write_tasks(tasks, taskfile)
         if args.unfinish_all:
             tasks.unfinish_all()
-            write_tasks(tasks, taskfile)
+        tasks.write(taskfile)
         if args.list_all:
             tasks.list_all()
     else:
