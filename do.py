@@ -142,7 +142,7 @@ class Tasklist(object):
 
 
 def get_parser():
-    usage = 'do [--init] | [-a TASK] [-hlFRU] [-cfru ID]'
+    usage = 'do [--init] | [-a TASK] [-cfru ID] [-hlFRU]'
     parser = argparse.ArgumentParser(usage=usage)
     parser.add_argument('-a', '--add', dest='add',
             help='add TASK to tasklist', metavar='TASK')
