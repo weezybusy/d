@@ -53,7 +53,7 @@ class Tasklist(object):
             task = Task(id_, text, status)
             self.tasks[id_] = task
         else:
-            print('\nExceeded {N} tasks limit.\n'.format(N=99))
+            print('Exceeded {N} tasks limit.'.format(N=99))
 
     def change(self, id_):
         if id_ in self.tasks:
@@ -61,7 +61,7 @@ class Tasklist(object):
             task = self.tasks[id_]
             task.set_text(text)
         else:
-            print('\nNo task with id {N}.\n'.format(N=id_))
+            print('No task with id {N}.'.format(N=id_))
             sys.exit()
 
     def finish(self, id_):
@@ -69,7 +69,7 @@ class Tasklist(object):
             task = self.tasks[id_]
             task.set_status(1)
         else:
-            print('\nNo task with id {N}.\n'.format(N=id_))
+            print('No task with id {N}.'.format(N=id_))
             sys.exit()
 
     def finish_all(self):
@@ -78,23 +78,21 @@ class Tasklist(object):
 
     def list_all(self):
         if len(self.ids) < 99:
-            print('')
             for task in self.tasks.values():
                 print('{id_:2}. [{status}] {text}'.format(
                     id_=task.get_id(),
                     status='X' if task.get_status() else ' ',
                     text=task.get_text()
                 ))
-            print('')
         else:
-            print('\nTask list is empty.\n')
+            print('Task list is empty.')
 
     def remove(self, id_):
         if id_ in self.tasks:
             self.tasks.pop(id_)
             self.ids.append(id_)
         else:
-            print('\nNo task with id {N}.\n'.format(N=id_))
+            print('No task with id {N}.'.format(N=id_))
             sys.exit()
 
     def remove_all(self):
@@ -105,7 +103,7 @@ class Tasklist(object):
             task = self.tasks[id_]
             task.set_status(0)
         else:
-            print('\nNo task with id {N}.\n'.format(N=id_))
+            print('No task with id {N}.'.format(N=id_))
             sys.exit()
 
     def unfinish_all(self):
@@ -182,9 +180,9 @@ def main():
     taskfile = pathlib.Path().resolve().joinpath('todo.json')
     if args.init:
         taskfile.touch()
-        print('\nTask list has been successfully created.\n' \
-              'Type do -a <task> to add task.\n'             \
-              'Type do -h to see all available options.\n')
+        print('Task list has been successfully created.\n' \
+              'Type do -a <task> to add task.\n'           \
+              'Type do -h to see all available options.')
     elif taskfile.exists():
         tasks = Tasklist()
         read_tasks(tasks, taskfile)
@@ -220,7 +218,7 @@ def main():
         if args.list_all:
             tasks.list_all()
     else:
-        print('\nType do --init to create task list.\n')
+        print('Type do --init to create task list.')
 
 
 if __name__ == '__main__':
