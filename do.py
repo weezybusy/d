@@ -51,40 +51,39 @@ class Tasklist(object):
                 if id_ in self.ids:
                     self.ids.remove(id_)
             task = Task(id_, text, status)
-            self.tasks[task.id_] = task
+            self.tasks[id_] = task
         else:
             print('\nExceeded {N} tasks limit.\n'.format(N=99))
 
     def change(self, id_):
         if id_ in self.tasks:
             text = input('text: ')
-            self.tasks[id_].set_text(text)
+            task = self.tasks[id_]
+            task.set_text(text)
         else:
             print('\nNo task with id {N}.\n'.format(N=id_))
             sys.exit()
 
     def finish(self, id_):
         if id_ in self.tasks:
-            self.tasks[id_].set_status(1)
+            task = self.tasks[id_]
+            task.set_status(1)
         else:
             print('\nNo task with id {N}.\n'.format(N=id_))
             sys.exit()
 
     def finish_all(self):
-        for t in self.tasks:
-            self.tasks[t].set_status(1)
+        for task in self.tasks.values():
+            task.set_status(1)
 
     def list_all(self):
         if len(self.ids) < 99:
             print('')
-            for t in self.tasks:
-                id_ = self.tasks[t].get_id()
-                text = self.tasks[t].get_text()
-                status = self.tasks[t].get_status()
+            for task in self.tasks.values():
                 print('{id_:2}. [{status}] {text}'.format(
-                    id_=id_,
-                    status='X' if status else ' ',
-                    text=text
+                    id_=task.get_id(),
+                    status='X' if task.get_status() else ' ',
+                    text=task.get_text()
                 ))
             print('')
         else:
@@ -103,14 +102,17 @@ class Tasklist(object):
 
     def unfinish(self, id_):
         if id_ in self.tasks:
-            self.tasks[id_].set_status(0)
+            task = self.tasks[id_]
+            task.set_status(0)
         else:
             print('\nNo task with id {N}.\n'.format(N=id_))
             sys.exit()
 
     def unfinish_all(self):
-        for t in self.tasks:
-            self.tasks[t].set_status(0)
+        #for t in self.tasks:
+        #    self.tasks[t].set_status(0)
+        for task in self.tasks.values():
+            task.set_status(0)
 
 
 def write_tasks(tasks, taskfile):
