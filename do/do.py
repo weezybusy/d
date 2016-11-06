@@ -144,7 +144,7 @@ class Tasklist(object):
 def get_parser():
     usage = 'do [--init] | [-a TASK] [-cfru ID] [-hlFRU]'
     parser = argparse.ArgumentParser(usage=usage)
-    parser.add_argument('-a', '--add', dest='add',
+    parser.add_argument('-a', '--add', dest='add', nargs='+',
             help='add TASK to tasklist', metavar='TASK')
     parser.add_argument('-c', '--change', dest='change', type=int,
             help='change task with specified ID', metavar='ID')
@@ -179,7 +179,7 @@ def main():
         tasks = Tasklist()
         tasks.read(taskfile)
         if args.add:
-            text = args.add
+            text = ' '.join(args.add)
             tasks.add(text)
         if args.change:
             id_ = args.change
