@@ -142,7 +142,7 @@ class Tasklist(object):
 
 
 def get_parser():
-    usage = 'do [--init]|[-a TASK] [-c ID] [fru ID...] [-hlFRU]'
+    usage = 'do [--init] | [-a TASK] [-c ID] [-fru ID...] [-hlFRU]'
     parser = argparse.ArgumentParser(
             usage=usage,
             formatter_class=lambda prog: argparse.HelpFormatter(
