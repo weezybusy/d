@@ -148,20 +148,22 @@ def get_parser():
             help='add TASK to tasklist', metavar='TASK')
     parser.add_argument('-c', '--change', dest='change', type=int,
             help='change task with specified ID', metavar='ID')
-    parser.add_argument('-f', '--finish', dest='finish', type=int,
-            help='mark task with specified ID as finished', metavar='ID')
+    parser.add_argument('-f', '--finish', dest='finish', type=int, nargs='+',
+            help='mark task(s) with specified ID(s) as finished',
+            metavar='ID')
     parser.add_argument('-F', '--finish-all', dest='finish_all',
             action='store_true', help='mark all tasks as finished')
     parser.add_argument('--init', dest='init', action='store_true',
             help='create task list in current working directory')
     parser.add_argument('-l', '--list-all', dest='list_all',
             action='store_true', help='list all tasks')
-    parser.add_argument('-r', '--remove', dest='remove', type=int,
-            help='remove task with specified ID', metavar='ID')
+    parser.add_argument('-r', '--remove', dest='remove', type=int, nargs='+',
+            help='remove task(s) with specified ID(s)', metavar='ID')
     parser.add_argument('-R', '--remove-all', dest='remove_all',
             action='store_true', help='remove all tasks')
     parser.add_argument('-u', '--unfinish', dest='unfinish', type=int,
-            help='mark task with specified ID as unfinished', metavar='ID')
+            nargs='+', help='mark task(s) with specified ID(s) as unfinished',
+            metavar='ID')
     parser.add_argument('-U', '--unfinish-all', dest='unfinish_all',
             action='store_true', help='mark all tasks as unfinished')
     return parser
@@ -185,18 +187,18 @@ def main():
             id_ = args.change
             tasks.change(id_)
         if args.finish:
-            id_ = args.finish
-            tasks.finish(id_)
+            for id_ in args.finish:
+                tasks.finish(id_)
         if args.finish_all:
             tasks.finish_all()
         if args.remove:
-            id_ = args.remove
-            tasks.remove(id_)
+            for id_ in args.remove:
+                tasks.remove(id_)
         if args.remove_all:
             tasks.remove_all()
         if args.unfinish:
-            id_ = args.unfinish
-            tasks.unfinish(id_)
+            for id_ in args.unfinish:
+                tasks.unfinish(id_)
         if args.unfinish_all:
             tasks.unfinish_all()
         tasks.write(taskfile)
