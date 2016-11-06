@@ -1,4 +1,3 @@
-import do
+# -*- coding: utf-8 -*-
 
-__author__ = 'Vitaliy Pisnya <vitaliy.pisnya@gmail.com>'
-__version__ = (1, 0, 0)
+__version__ = '0.1'
