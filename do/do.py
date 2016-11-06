@@ -145,13 +145,12 @@ def get_parser():
     usage = 'do [--init]|[-a TASK] [-c ID] [fru ID...] [-hlFRU]'
     parser = argparse.ArgumentParser(
             usage=usage,
-            formatter_class=lambda prog:
-                argparse.HelpFormatter(
-                    prog,
-                    indent_increment=2,
-                    max_help_position=45,
-                    width=90
-                )
+            formatter_class=lambda prog: argparse.HelpFormatter(
+                prog,
+                indent_increment=2,
+                max_help_position=45,
+                width=90
+            )
     )
     parser.add_argument('-a', '--add', dest='add', nargs='+',
             help='add TASK to task list', metavar='TASK')
