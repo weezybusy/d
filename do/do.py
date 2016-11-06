@@ -142,19 +142,28 @@ class Tasklist(object):
 
 
 def get_parser():
-    usage = 'do [--init] | [-a TASK] [-cfru ID] [-hlFRU]'
-    parser = argparse.ArgumentParser(usage=usage)
+    usage = 'do [--init]|[-a TASK] [-c ID] [fru ID...] [-hlFRU]'
+    parser = argparse.ArgumentParser(
+            usage=usage,
+            formatter_class=lambda prog:
+                argparse.HelpFormatter(
+                    prog,
+                    indent_increment=2,
+                    max_help_position=45,
+                    width=90
+                )
+    )
     parser.add_argument('-a', '--add', dest='add', nargs='+',
-            help='add TASK to tasklist', metavar='TASK')
+            help='add TASK to task list', metavar='TASK')
     parser.add_argument('-c', '--change', dest='change', type=int,
             help='change task with specified ID', metavar='ID')
     parser.add_argument('-f', '--finish', dest='finish', type=int, nargs='+',
-            help='mark task(s) with specified ID(s) as finished',
+            help='finish task(s) with specified ID(s)',
             metavar='ID')
     parser.add_argument('-F', '--finish-all', dest='finish_all',
             action='store_true', help='mark all tasks as finished')
     parser.add_argument('--init', dest='init', action='store_true',
-            help='create task list in current working directory')
+            help='create task list in current directory')
     parser.add_argument('-l', '--list-all', dest='list_all',
             action='store_true', help='list all tasks')
     parser.add_argument('-r', '--remove', dest='remove', type=int, nargs='+',
@@ -162,7 +171,7 @@ def get_parser():
     parser.add_argument('-R', '--remove-all', dest='remove_all',
             action='store_true', help='remove all tasks')
     parser.add_argument('-u', '--unfinish', dest='unfinish', type=int,
-            nargs='+', help='mark task(s) with specified ID(s) as unfinished',
+            nargs='+', help='reset task(s) with specified ID(s)',
             metavar='ID')
     parser.add_argument('-U', '--unfinish-all', dest='unfinish_all',
             action='store_true', help='mark all tasks as unfinished')
