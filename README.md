@@ -17,7 +17,7 @@ $ do -l
  2. [ ] survive
  3. [ ] go to sleep
 
-# Finish some tisks and list all tasks
+# Finish some tisks and list all of them
 $ do -f 1 2 -l
  1. [X] wake up
  2. [X] survive
