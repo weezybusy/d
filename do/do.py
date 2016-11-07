@@ -114,7 +114,11 @@ class Tasklist(object):
                     try:
                         data = json.load(f)
                         for task in data.values():
-                            self.add(task['text'], task['id'], task['status'])
+                            self.add(
+                                    task['text'],
+                                    task['id'],
+                                    task['status']
+                            )
                     except ValueError as e:
                         print(e)
             except IOError as e:
