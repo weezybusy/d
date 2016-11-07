@@ -113,11 +113,8 @@ class Tasklist(object):
                 with taskfile.open('r') as f:
                     try:
                         data = json.load(f)
-                        for k in data:
-                            id_ = data[k]['id']
-                            text = data[k]['text']
-                            status = data[k]['status']
-                            self.add(text, id_, status)
+                        for task in data.values():
+                            self.add(task['text'], task['id'], task['status'])
                     except ValueError as e:
                         print(e)
             except IOError as e:
@@ -132,9 +129,9 @@ class Tasklist(object):
                     text = task.get_text()
                     status = task.get_status()
                     data[id_] = {
-                        'id': id_,
-                        'text': text,
-                        'status': status
+                            'id': id_,
+                            'text': text,
+                            'status': status
                     }
                 json.dump(data, f, ensure_ascii=False, indent=2)
         except IOError as e:
