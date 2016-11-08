@@ -1,5 +1,5 @@
 # d
-A simple CLI task management tool
+Just another CLI task management tool
 
 ### Examples
 ```
