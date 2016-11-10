@@ -78,4 +78,4 @@ def main():
         if args.list_all:
             tasks.list_all()
     else:
-        print('Type do --init to create task list.')
+        print('Type d --init to create task list.')
