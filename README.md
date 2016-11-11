@@ -33,5 +33,5 @@ $ d -f 1 2 -l
 $ d -c 3 go to party -l
  1. [X] wake up
  2. [X] survive
- 3. [ ] go to party
+ 3. [ ] go to a party
 ```
