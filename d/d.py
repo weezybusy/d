@@ -51,9 +51,8 @@ class Tasklist(object):
         else:
             print('Exceeded {N} tasks limit.'.format(N=99))
 
-    def change(self, id_):
+    def change(self, id_, text):
         if id_ in self.tasks:
-            text = input('text: ')
             task = self.tasks[id_]
             task.set_text(text)
         else:

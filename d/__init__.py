@@ -2,42 +2,37 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import d
 import pathlib
+from . import d
 
 def get_args():
     parser = argparse.ArgumentParser(
             description='A simple CLI task management tool',
-            usage='%(prog)s [--init] | [-a TASK] [-c ID] [-fru ID ...] [-hlFRU]',
             formatter_class=lambda prog: argparse.HelpFormatter(
                 prog,
-                indent_increment=2,
-                max_help_position=45,
-                width=90
+                max_help_position=35,
             )
     )
-    parser.add_argument('-a', '--add', dest='add', nargs='+',
-            action='append', help='add TASK to task list', metavar='TASK')
-    parser.add_argument('-c', '--change', dest='change', type=int,
-            help='change task with specified ID', metavar='ID')
-    parser.add_argument('-f', '--finish', dest='finish', type=int, nargs='+',
-            help='finish task(s) with specified ID(s)',
-            metavar='ID')
-    parser.add_argument('-F', '--finish-all', dest='finish_all',
-            action='store_true', help='mark all tasks as finished')
+    parser.add_argument('-a', dest='add', nargs='+', action='append',
+            help='add TASK to task list', metavar='TASK')
+    parser.add_argument('-c', dest='change', nargs='+',
+            help='change task with specified ID', metavar='(ID, TASK)')
+    parser.add_argument('-f', dest='finish', type=int, nargs='+',
+            help='finish task(s) with specified ID(s)', metavar='ID')
+    parser.add_argument('-F', dest='finish_all', action='store_true',
+            help='mark all tasks as finished')
     parser.add_argument('--init', dest='init', action='store_true',
             help='create task list in current directory')
-    parser.add_argument('-l', '--list-all', dest='list_all',
-            action='store_true', help='list all tasks')
-    parser.add_argument('-r', '--remove', dest='remove', type=int, nargs='+',
+    parser.add_argument('-l', dest='list_all', action='store_true',
+            help='list all tasks')
+    parser.add_argument('-r', dest='remove', type=int, nargs='+',
             help='remove task(s) with specified ID(s)', metavar='ID')
-    parser.add_argument('-R', '--remove-all', dest='remove_all',
-            action='store_true', help='remove all tasks')
-    parser.add_argument('-u', '--undo', dest='undo', type=int,
-            nargs='+', help='reset task(s) with specified ID(s)',
-            metavar='ID')
-    parser.add_argument('-U', '--undo-all', dest='undo_all',
-            action='store_true', help='mark all tasks as unfinished')
+    parser.add_argument('-R', dest='remove_all', action='store_true',
+            help='remove all tasks')
+    parser.add_argument('-u', dest='undo', type=int, nargs='+',
+            help='reset task(s) with specified ID(s)', metavar='ID')
+    parser.add_argument('-U', dest='undo_all', action='store_true',
+            help='mark all tasks as unfinished')
     return parser.parse_args()
 
 
@@ -45,10 +40,13 @@ def main():
     args = get_args()
     taskfile = pathlib.Path().resolve().joinpath('todo.json')
     if args.init:
-        taskfile.touch()
-        print('Task list has been successfully created.\n'
-              'Type do -a <task> to add first task.\n'
-              'Type do -h to see all available options.')
+        if not taskfile.exists():
+            taskfile.touch()
+            print('Task list has been successfully created.\n'
+                  'Type  d -a task  to add first task.\n'
+                  'Type  d -h  to see all available options.')
+        else:
+            print('Task list already exists.')
     elif taskfile.exists():
         tasks = d.Tasklist()
         tasks.read(taskfile)
@@ -57,8 +55,12 @@ def main():
                 text = ' '.join(a)
                 tasks.add(text)
         if args.change:
-            id_ = args.change
-            tasks.change(id_)
+            try:
+                id_ = int(args.change[0])
+                text = ' '.join(args.change[1:])
+                tasks.change(id_, text)
+            except ValueError:
+                print('Invalid id type.')
         if args.finish:
             for id_ in args.finish:
                 tasks.finish(id_)
