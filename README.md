@@ -28,8 +28,10 @@ $ d -f 1 2 -l
  2. [X] survive
  3. [ ] go to sleep
 ```
-- Change task
+- Change task and list all
 ```
-$ d -c 2
-text: <enter text>
+$ d -c 3 go to party -l
+ 1. [X] wake up
+ 2. [X] survive
+ 3. [ ] go to party
 ```
