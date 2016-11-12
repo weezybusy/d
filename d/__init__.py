@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from . import d
 import argparse
 import pathlib
-from . import d
+import sys
 
 def get_args():
     parser = argparse.ArgumentParser(
@@ -28,7 +29,7 @@ def get_args():
     parser.add_argument('-r', dest='remove', type=int, nargs='+',
             help='remove task(s) with specified ID(s)', metavar='ID')
     parser.add_argument('-R', dest='remove_all', action='store_true',
-            help='remove all tasks')
+            help='remove task list')
     parser.add_argument('-u', dest='undo', type=int, nargs='+',
             help='reset task(s) with specified ID(s)', metavar='ID')
     parser.add_argument('-U', dest='undo_all', action='store_true',
@@ -42,9 +43,7 @@ def main():
     if args.init:
         if not taskfile.exists():
             taskfile.touch()
-            print('Task list has been successfully created.\n'
-                  'Type  d -a task  to add first task.\n'
-                  'Type  d -h  to see all available options.')
+            print('Task list has been successfully created.')
         else:
             print('Task list already exists.')
     elif taskfile.exists():
@@ -60,7 +59,7 @@ def main():
                 text = ' '.join(args.change[1:])
                 tasks.change(id_, text)
             except ValueError:
-                print('Invalid id type.')
+                print('Invalid task id type.')
         if args.finish:
             for id_ in args.finish:
                 tasks.finish(id_)
@@ -71,6 +70,8 @@ def main():
                 tasks.remove(id_)
         if args.remove_all:
             tasks.remove_all()
+            taskfile.unlink()
+            sys.exit(0)
         if args.undo:
             for id_ in args.undo:
                 tasks.undo(id_)
@@ -80,4 +81,4 @@ def main():
         if args.list_all:
             tasks.list_all()
     else:
-        print('Type d --init to create task list.')
+        print('Type  d --init  to create task list.')

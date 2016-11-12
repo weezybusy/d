@@ -57,7 +57,7 @@ class Tasklist(object):
             task.set_text(text)
         else:
             print('No task with id {N}.'.format(N=id_))
-            sys.exit()
+            sys.exit(1)
 
     def finish(self, id_):
         if id_ in self.tasks:
@@ -65,7 +65,7 @@ class Tasklist(object):
             task.set_status(1)
         else:
             print('No task with id {N}.'.format(N=id_))
-            sys.exit()
+            sys.exit(1)
 
     def finish_all(self):
         for task in self.tasks.values():
@@ -88,7 +88,7 @@ class Tasklist(object):
             self.ids.append(id_)
         else:
             print('No task with id {N}.'.format(N=id_))
-            sys.exit()
+            sys.exit(1)
 
     def remove_all(self):
         self.tasks.clear()
@@ -99,7 +99,7 @@ class Tasklist(object):
             task.set_status(0)
         else:
             print('No task with id {N}.'.format(N=id_))
-            sys.exit()
+            sys.exit(1)
 
     def undo_all(self):
         for task in self.tasks.values():
