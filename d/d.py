@@ -1,139 +1,131 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import json
+from . import tasklist
+from pathlib import Path
+import argparse
 import sys
 
-class Task(object):
+def get_args():
+    parser = argparse.ArgumentParser(
+            description='A simple CLI task management tool.',
+            formatter_class=lambda prog: argparse.HelpFormatter(
+                prog,
+                max_help_position=35
+            )
+    )
+    parser.add_argument(
+            '-a',
+            dest='add',
+            action='append',
+            metavar='\'TASK\'',
+            help='add TASK to task list'
+    )
+    parser.add_argument(
+            '-c',
+            dest='change',
+            nargs=2,
+            metavar=('ID', '\'NEW TASK\''),
+            help='change task with specified ID'
+    )
+    parser.add_argument(
+            '-f',
+            dest='finish',
+            type=int,
+            nargs='+',
+            metavar='ID',
+            help='finish task(s) with specified ID(s)'
+    )
+    parser.add_argument(
+            '-F',
+            dest='finish_all',
+            action='store_true',
+            help='mark all tasks as finished'
+    )
+    parser.add_argument(
+            '--init',
+            dest='init',
+            action='store_true',
+            help='create task list in current directory'
+    )
+    parser.add_argument(
+            '-l',
+            dest='list_all',
+            action='store_true',
+            help='list all tasks'
+    )
+    parser.add_argument(
+            '-r',
+            dest='remove',
+            type=int,
+            nargs='+',
+            metavar='ID',
+            help='remove task(s) with specified ID(s)'
+    )
+    parser.add_argument(
+            '-R',
+            dest='remove_all',
+            action='store_true',
+            help='remove task list and exit the program'
+    )
+    parser.add_argument(
+            '-u',
+            dest='undo',
+            type=int,
+            nargs='+',
+            metavar='ID',
+            help='reset task(s) with specified ID(s)'
+    )
+    parser.add_argument(
+            '-U',
+            dest='undo_all',
+            action='store_true',
+            help='mark all tasks as unfinished'
+    )
+    return parser.parse_args()
 
-    def __init__(self, id_=1, text='text', status=0):
-        self.id_ = id_
-        self.text = text
-        self.status = status
 
-    def get_id(self):
-        return self.id_
-
-    def get_text(self):
-        return self.text
-
-    def get_status(self):
-        return self.status
-
-    def set_id(self, id_):
-        if id_ > 0:
-            self.id_ = id_
-
-    def set_text(self, text):
-        self.text = text
-
-    def set_status(self, status):
-        if status in (0, 1):
-            self.status = status
-
-
-class Tasklist(object):
-
-    def __init__(self):
-        self.tasks = {}
-        self.ids = [i for i in range(1, 100)]
-
-    def add(self, text, id_=None, status=0):
-        if self.ids:
-            if id_ is None:
-                id_ = self.ids.pop(0)
-            else:
-                if id_ in self.ids:
-                    self.ids.remove(id_)
-            task = Task(id_, text, status)
-            self.tasks[id_] = task
+def main():
+    args = get_args()
+    taskfile = Path().resolve().joinpath('todo.json')
+    if args.init:
+        if not taskfile.exists():
+            taskfile.touch()
+            print('Task list has been successfully created.')
         else:
-            print('Exceeded {N} tasks limit.'.format(N=99))
-
-    def change(self, id_, text):
-        if id_ in self.tasks:
-            task = self.tasks[id_]
-            task.set_text(text)
-        else:
-            print('No task with id {N}.'.format(N=id_))
-            sys.exit(1)
-
-    def finish(self, id_):
-        if id_ in self.tasks:
-            task = self.tasks[id_]
-            task.set_status(1)
-        else:
-            print('No task with id {N}.'.format(N=id_))
-            sys.exit(1)
-
-    def finish_all(self):
-        for task in self.tasks.values():
-            task.set_status(1)
-
-    def list_all(self):
-        if len(self.ids) < 99:
-            for task in self.tasks.values():
-                print('{id_:2}. [{status}] {text}'.format(
-                    id_=task.get_id(),
-                    status='X' if task.get_status() else ' ',
-                    text=task.get_text()
-                ))
-        else:
-            print('Task list is empty.')
-
-    def remove(self, id_):
-        if id_ in self.tasks:
-            self.tasks.pop(id_)
-            self.ids.append(id_)
-        else:
-            print('No task with id {N}.'.format(N=id_))
-            sys.exit(1)
-
-    def remove_all(self):
-        self.tasks.clear()
-
-    def undo(self, id_):
-        if id_ in self.tasks:
-            task = self.tasks[id_]
-            task.set_status(0)
-        else:
-            print('No task with id {N}.'.format(N=id_))
-            sys.exit(1)
-
-    def undo_all(self):
-        for task in self.tasks.values():
-            task.set_status(0)
-
-    def read(self, taskfile):
-        if taskfile.stat().st_size > 0:
+            print('Task list already exists.')
+    if taskfile.exists():
+        tasks = tasklist.Tasklist()
+        tasks.read(taskfile)
+        if args.add:
+            for text in args.add:
+                tasks.add(text)
+        if args.change:
             try:
-                with taskfile.open('r') as f:
-                    try:
-                        data = json.load(f)
-                        for task in data.values():
-                            self.add(
-                                    task['text'],
-                                    task['id'],
-                                    task['status']
-                            )
-                    except ValueError as e:
-                        print(e)
-            except IOError as e:
-                print(e)
-
-    def write(self, taskfile):
-        try:
-            with taskfile.open('w') as f:
-                data = {}
-                for task in self.tasks.values():
-                    id_ = task.get_id()
-                    text = task.get_text()
-                    status = task.get_status()
-                    data[id_] = {
-                            'id': id_,
-                            'text': text,
-                            'status': status
-                    }
-                json.dump(data, f, ensure_ascii=False, indent=2)
-        except IOError as e:
-            print(e)
+                id_ = int(args.change[0])
+                text = args.change[1]
+                tasks.change(id_, text)
+            except ValueError:
+                print('Invalid task id type.')
+        if args.finish:
+            for id_ in args.finish:
+                tasks.finish(id_)
+        if args.finish_all:
+            tasks.finish_all()
+        if args.remove:
+            for id_ in args.remove:
+                tasks.remove(id_)
+        if args.remove_all:
+            tasks.remove_all()
+            taskfile.unlink()
+            sys.exit(0)
+        if args.undo:
+            for id_ in args.undo:
+                tasks.undo(id_)
+        if args.undo_all:
+            tasks.undo_all()
+        tasks.write(taskfile)
+        if args.list_all:
+            tasks.list_all()
+    else:
+        print('Type  d --init  to create task list.')
