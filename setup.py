@@ -9,7 +9,7 @@ with p.open(encoding='utf-8') as f:
 
 setup(
     name='d',
-    version='0.1',
+    version='0.1.0',
     description='A simple CLI task management tool.',
     long_description=long_description,
     url='https://github.com/weezybusy/d',
