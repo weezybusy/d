@@ -8,11 +8,11 @@ $ d --init
 ```
 - Add task
 ```
-$ d -a wake up
+$ d -a 'wake up'
 ```
 - Add several tasks at once
 ```
-$ d -a survive -a go to sleep
+$ d -a 'survive' -a 'go to sleep'
 ```
 - List all tasks
 ```
@@ -30,7 +30,7 @@ $ d -f 1 2 -l
 ```
 - Change task and list all
 ```
-$ d -c 3 go to a party -l
+$ d -c 3 'go to a party' -l
  1. [X] wake up
  2. [X] survive
  3. [ ] go to a party

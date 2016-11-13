@@ -3,8 +3,8 @@
 from setuptools import setup, find_packages
 from pathlib import Path
 
-desc = Path(__file__).parent.resolve().joinpath('README.md')
-with desc.open(encoding='utf-8') as f:
+p = Path().resolve().joinpath('README.md')
+with p.open(encoding='utf-8') as f:
     long_description = f.read()
 
 setup(

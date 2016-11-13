@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 import json
-import pathlib
 import sys
 
 class Task(object):
