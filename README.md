@@ -1,5 +1,5 @@
 # d
-Just another CLI task management tool
+Yet another CLI task management tool
 
 ### Examples
 - Create task list in current directory
